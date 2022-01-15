@@ -110,7 +110,7 @@ class Solver {
     }
 
     public String guess() {
-        guess = averageGuess();
+        guess = dumbGuess();
         print("Guess: " + guess);
         return guess;
     }
