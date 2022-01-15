@@ -9,6 +9,7 @@ class Solver {
             'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
     final ArrayList<String> starter_words = new ArrayList<>(Arrays.asList(new String[]{"FIBER", "MADLY", "PUNKS", "GOTCH"}));
     final Map<String, ArrayList<Word>> sorted_words = new HashMap<>();
+    final List<Map<Character, Integer>> letters_weights = new ArrayList<>();
 
     ArrayList<ArrayList<Character>> possible_letters = new ArrayList<>();
     ArrayList<Character> found_letters = new ArrayList<>();
@@ -40,7 +41,6 @@ class Solver {
             e.printStackTrace();
         }
 
-        List<Map<Character, Integer>> letters_weights = new ArrayList<>();
         for (int i = 0; i < 5; ++i) {
             Map<Character, Integer> letter_weights = new HashMap<>();
             for (char alphabet : alphabets) {
@@ -49,7 +49,7 @@ class Solver {
             letters_weights.add(letter_weights);
         }
         for (String word : raw_words) {
-            for (int i = 0; i < word.toCharArray().length; ++i) {
+            for (int i = 0; i < word.length(); ++i) {
                 char letter = word.charAt(i);
                 letters_weights.get(i).put(letter, letters_weights.get(i).get(letter) + 1);
             }
@@ -59,7 +59,7 @@ class Solver {
             raw_data[i] = new RawData();
             raw_data[i].word = raw_words[i];
             ArrayList<Character> visited_letters = new ArrayList<>();
-            for (int j = 0; j < raw_data[i].word.toCharArray().length; ++j) {
+            for (int j = 0; j < raw_data[i].word.length(); ++j) {
                 char letter = raw_data[i].word.charAt(j);
                 if (visited_letters.indexOf(letter) != -1) {
                     continue;
@@ -98,7 +98,10 @@ class Solver {
             }
             Word word = new Word();
             word.word = raw_data[i].word;
-            word.weight = raw_data[i].weight;
+            for (int j = 0; j < word.word.length(); ++j) {
+                word.weights.set(j, letters_weights.get(j).get(word.word.charAt(j)));
+            }
+            word.calculateWeights();
             sorted_words.get(sorted_word).add(word);
         }
 
@@ -113,10 +116,10 @@ class Solver {
     }
 
     public String averageGuess() {
-        int current_weight = 0;
+        int current_weight = -1;
         String current_word = "";
         for (String sorted_word : sorted_words.keySet()) {
-            for(Word word : sorted_words.get(sorted_word)) {
+            for (Word word : sorted_words.get(sorted_word)) {
                 if (word.weight > current_weight) {
                     current_weight = word.weight;
                     current_word = word.word;
@@ -131,13 +134,7 @@ class Solver {
             return starter_words.get(starter_words_index++);
         } else {
             return averageGuess();
-//            for (String sorted_word : sorted_words.keySet()) {
-//                for(String word : sorted_words.get(sorted_word).words) {
-//                    return word;
-//                }
-//            }
         }
-//        return "";
     }
 
     public void validateGuess(ArrayList<LetterResult> result) {
@@ -187,28 +184,24 @@ class Solver {
     }
 
     private void recalculateWeightsWithLetter(char letter, LetterResult result) {
-//        sorted_words.clear();
-//        for (int i = 0; i < raw_data.length; ++i) {
-//            char charArray[] = raw_data[i].word.toCharArray();
-//            Arrays.sort(charArray);
-//            String sorted_word = new String(charArray);
-//            if (!sorted_words.containsKey(sorted_word)) {
-//                sorted_words.put(sorted_word, new Words());
-//            }
-//            if (sorted_words.get(sorted_word).weight < raw_data[i].weight) {
-//                sorted_words.get(sorted_word).weight = raw_data[i].weight;
-//            }
-//            sorted_words.get(sorted_word).words.add(raw_data[i].word);
-//        }
-//
-//        for(String sorted_word : sorted_words.keySet()) {
-//            if (sorted_words.get(sorted_word).words.indexOf(letter) == -1) {
-//                continue;
-//            }
-//            for(int i = 0; i < sorted_words.get(sorted_word).words.size(); ++i) {
-//
-//            }
-//        }
+        for (String sorted_word : sorted_words.keySet()) {
+            if (sorted_word.indexOf(letter) == -1) {
+                continue;
+            }
+            for (Word word : sorted_words.get(sorted_word)) {
+                for (int i = 0; i < word.word.length(); ++i) {
+                    char current_letter = word.word.charAt(i);
+                    if (current_letter == letter) {
+                        if (result == LetterResult.WRONG_SPOT) {
+                            word.weights.set(i, letters_weights.get(i).get(current_letter) * 4);
+                        } else if (result == LetterResult.CORRECT_SPOT) {
+                            word.weights.set(i, 0);
+                        }
+                        word.calculateWeights();
+                    }
+                }
+            }
+        }
     }
 
     private void processWords() {
