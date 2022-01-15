@@ -7,8 +7,8 @@ class Main {
     final static char[] alphabets = new char[]{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
 
     public static void main(String[] args) throws IOException {
+//        run();
         check();
-
     }
 
     static void run() {
@@ -33,14 +33,14 @@ class Main {
             System.out.println(solver.guess());
             input = reader.nextLine();
             // TODO: Check if input is number.
-            ArrayList<Solver.Status> result = new ArrayList<>();
+            ArrayList<Solver.LetterResult> result = new ArrayList<>();
             for (char character : input.toCharArray()) {
                 if (character == '0') {
-                    result.add(Solver.Status.NOT_FOUND);
+                    result.add(Solver.LetterResult.NOT_FOUND);
                 } else if (character == '1') {
-                    result.add(Solver.Status.WRONG_SPOT);
+                    result.add(Solver.LetterResult.WRONG_SPOT);
                 } else if (character == '2') {
-                    result.add(Solver.Status.CORRECT_SPOT);
+                    result.add(Solver.LetterResult.CORRECT_SPOT);
                 } else {
                     // uh oh
                 }
@@ -52,9 +52,19 @@ class Main {
 
     static void check() {
         Checker checker = new Checker();
+//        checker.solve("TANGY");
         for (char alphabet : alphabets) {
             checker.solveMultiple(alphabet);
         }
-        System.out.println("Summary: " + checker.total_successes + "/" + checker.total_runs + " (" + (double) checker.total_successes / (double) checker.total_runs * 100 + "%)");
+        System.out.println("Summary");
+        System.out.println(checker.total_successes + "/" + checker.total_runs + " (" + (int) ((double) checker.total_successes / (double) checker.total_runs * 100) + "%)");
+        Map<Integer, Integer> guesses = checker.guesses;
+        for(Integer key : guesses.keySet()) {
+            if (key != -1) {
+                System.out.println("Solved " + guesses.get(key) + " words with " + key + " guess(es).");
+            } else {
+                System.out.println("Could not solve " + guesses.get(key) + " words.");
+            }
+        }
     }
 }
